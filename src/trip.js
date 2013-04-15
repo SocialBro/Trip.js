@@ -55,6 +55,8 @@
         };
 
         this.console = window.console || {};
+
+        this.totalPausedStep = null;
     };
 
     Trip.prototype = {
@@ -126,31 +128,32 @@
         },
 
         keyEvent : function(e) {
+            if(!this.totalPause) {
+                switch(e.which) {
+                case this.CONSTANTS['ESC'] :
 
-            switch(e.which) {
-            case this.CONSTANTS['ESC'] :
+                    this.stop();
+                    break;
 
-                this.stop();
-                break;
+                case this.CONSTANTS['SPACE'] : 
 
-            case this.CONSTANTS['SPACE'] : 
+                    // space will make the page jump
+                    e.preventDefault();
+                    this.pause();
+                    break;
 
-                // space will make the page jump
-                e.preventDefault();
-                this.pause();
-                break;
+                case this.CONSTANTS['LEFT_ARROW'] :
+                case this.CONSTANTS['UP_ARROW'] :
 
-            case this.CONSTANTS['LEFT_ARROW'] :
-            case this.CONSTANTS['UP_ARROW'] :
+                    this.prev();
+                    break;
 
-                this.prev();
-                break;
+                case this.CONSTANTS['RIGHT_ARROW'] : 
+                case this.CONSTANTS['DOWN_ARROW'] : 
 
-            case this.CONSTANTS['RIGHT_ARROW'] : 
-            case this.CONSTANTS['DOWN_ARROW'] : 
-
-                this.next();
-                break;
+                    this.next();
+                    break;
+                }                
             }
         },
 
@@ -189,6 +192,7 @@
             }
             else {
                 this.increaseIndex();
+                console.log('increase', this.tripIndex);
                 this.run();
             }
         },
@@ -199,6 +203,7 @@
             }
             else {
                 this.decreaseIndex();
+                console.log('decrease', this.tripIndex);
                 this.run();
             }
         },
@@ -260,6 +265,35 @@
             return false;
         },
 
+        toggleTotalPause: function() {
+            this.totalPause = this.totalPause ? false : true;
+            if(!this.totalPause && this.totalPausedStep) {
+                var tripObject = this.totalPausedStep,
+                    delay = tripObject.delay || this.settings.delay,
+                    that = this;
+
+                this.showCurrentTrip( this.getCurrentTripObject() );
+                // show the progress bar
+                this.showProgressBar( delay );
+                this.progressing = true;
+
+                // set timer to show next
+                this.timer = new Timer(function() {
+
+                    // XXX
+                    // If we get here, it means this we have finished a step within a trip.
+
+                    if ( that.hasCallback() ) {
+                        that.getCurrentTripObject().callback( that.tripIndex, that );
+                    }
+
+                    that.next();
+
+                }, delay);                    
+                totalPausedStep = null;   
+            }
+        },
+
         showProgressBar : function( delay ) {
             var that = this;
 
@@ -288,27 +322,35 @@
             var that = this,
                 tripObject = this.getCurrentTripObject(),
                 delay = tripObject.delay || this.settings.delay;
+            if( that.hasBeforeCallback() ) {
+                tripObject.beforeCallback( that.tripIndex, that );
+            }
 
             // next to o
-            this.showCurrentTrip( tripObject );
+            if(!that.totalPause) {
+                that.showCurrentTrip( tripObject );
+                // show the progress bar
+                that.showProgressBar( delay );
+                that.progressing = true;
 
-            // show the progress bar
-            this.showProgressBar( delay );
-            this.progressing = true;
+                // set timer to show next
+                that.timer = new Timer(function() {
 
-            // set timer to show next
-            this.timer = new Timer(function() {
+                    // XXX
+                    // If we get here, it means that we have finished a step within a trip.
 
-                // XXX
-                // If we get here, it means that we have finished a step within a trip.
+                    if ( that.hasCallback() ) {
+                        that.getCurrentTripObject().callback( that.tripIndex, that );
+                    }
 
-                if ( that.hasCallback() ) {
-                    tripObject.callback( that.tripIndex );
-                }
+                    that.next();
 
-                that.next();
+                }, delay);                    
 
-            }, delay);
+            } else {
+                that.hideTripBlock();
+                that.totalPausedStep = tripObject;
+            }
         },
 
         isFirst : function() {
@@ -321,6 +363,10 @@
 
         hasCallback : function() {
             return (typeof this.tripData[ this.tripIndex ].callback !== "undefined");
+        },
+
+        hasBeforeCallback : function() {
+            return (typeof this.tripData[ this.tripIndex ].beforeCallback !== "undefined");
         },
 
         increaseIndex : function() {

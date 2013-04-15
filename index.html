@@ -3,7 +3,7 @@
 }
 .wrapper div:nth-child(even) {
     background : #DDD;
-}</style><script src="public/vendor/modernizr-2.6.2.min.js"></script><script src="public/vendor/jquery-1.8.3.min.js"></script><script src="public/vendor/bootstrap/js/bootstrap.min.js"></script><script src="./src/trip.min.js"></script><script>(function(d, s, id) {
+}</style><script src="public/vendor/modernizr-2.6.2.min.js"></script><script src="public/vendor/jquery-1.8.3.min.js"></script><script src="public/vendor/bootstrap/js/bootstrap.min.js"></script><script src="public/js/bootstrap-prompts.js"></script><script src="./src/trip.js"></script><script>(function(d, s, id) {
     var js, fjs = d.getElementsByTagName(s)[0];
     if (d.getElementById(id)) return;
     js = d.createElement(s); js.id = id;
@@ -15,7 +15,7 @@
         { 
             sel : $('.step1'), 
             position : 'n', 
-            content : 'Hi, I am Trip.js', 
+            content : 'Nota básica', 
             delay : 2000,
             callback : function(i) {
                 console.log("step "+ i +" is finished");
@@ -24,42 +24,46 @@
         {
             sel : $('.step2'),
             position : 'e',
-            content : 'This is a plugin that can help you make hint flow easily !',
+            content : 'Esto se muestra después del beforeCallback',
             delay : 3000,
-            callback : function(i) {
+            beforeCallback: function(i, trip) {
+                trip.toggleTotalPause();
+                var go = confirm("Esto es una descripción larga de lo que normalmente vamos a tener en estos pasos tan gigantescos. Dale a seguir si quieres seguir y si no po ná!", function(go) {
+                    if(go) trip.toggleTotalPause();
+                });
+            },
+            callback : function(i, trip) {
                 console.log("step "+ i +" is finished");
             }
         },
         {
             sel : $('.step3'),
             position : 'n',
-            content : 'Can be placed in many directinos - North',
+            content : 'En el siguiente hay otro aviso.',
             delay : 2000
         },
         {
             sel : $('.step4'),
             position : 'e',
-            content : 'East',
-            delay : 2000
-        },
-        {
-            sel : $('.step5'),
-            position : 'w',
-            content : 'West',
-            delay : 2000
-        },
-        {
-            sel : $('.step6'),
-            position : 's',
-            content : 'South',
-            delay : 2000
+            content : '¿Te ha gustado?',
+            delay : 2000,
+            beforeCallback: function(i, trip) {
+                trip.toggleTotalPause();
+                var go = confirm("Hold your breath and count to ten.", function(go) {
+                    if(go) trip.toggleTotalPause();
+                });
+            }
         },
         {
             sel : $('.step7'),
             position : 'n',
-            content : 'One more thing, plz read this !',
+            content : 'Esto se muestra antes del afterCallback',
             expose : true,
-            delay : 7000
+            delay : 7000,
+            callback: function(i, trip) {
+                trip.toggleTotalPause();
+                alert("This is the end.")
+            }
         }
     ], {
         onTripStart : function() {
