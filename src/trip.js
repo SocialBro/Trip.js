@@ -192,7 +192,6 @@
             }
             else {
                 this.increaseIndex();
-                console.log('increase', this.tripIndex);
                 this.run();
             }
         },
@@ -203,7 +202,6 @@
             }
             else {
                 this.decreaseIndex();
-                console.log('decrease', this.tripIndex);
                 this.run();
             }
         },
@@ -213,6 +211,10 @@
         // `showCurrentTrip` doesn't have to take care about which is the current trip object, 
         // it just does the necessary operations according to the passed tripData `o`
         showCurrentTrip : function(o) {
+
+            if(typeof o.sel === 'string') {
+                o.sel = $(o.sel);
+            }
 
             // preprocess when we have to show trip block
             if ( this.timer ) {
