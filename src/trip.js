@@ -56,7 +56,7 @@
 
         this.console = window.console || {};
 
-        this.totalPausedStep = null;
+        this.modalStep = null;
     };
 
     Trip.prototype = {
@@ -187,6 +187,11 @@
         },
 
         next : function() {
+            //prevStep callback
+            if ( this.hasCallback() ) {
+                this.getCurrentTripObject().callback( this.tripIndex, this );
+            }
+            //Curent step
             if ( this.isLast() ){
                 this.doLastOperation();
             }
@@ -244,8 +249,6 @@
         },
 
         doLastOperation : function() {
-            
-            this.timer.stop();
 
             if ( this.settings.enableKeyBinding ) {
                 this.unbindKeyEvents();
@@ -267,32 +270,15 @@
             return false;
         },
 
-        toggleTotalPause: function() {
+        toggleModal: function() {
             this.totalPause = this.totalPause ? false : true;
-            if(!this.totalPause && this.totalPausedStep) {
-                var tripObject = this.totalPausedStep,
+            if(!this.totalPause && this.modalStep) {
+                var tripObject = this.modalStep,
                     delay = tripObject.delay || this.settings.delay,
                     that = this;
 
                 this.showCurrentTrip( this.getCurrentTripObject() );
-                // show the progress bar
-                this.showProgressBar( delay );
-                this.progressing = true;
-
-                // set timer to show next
-                this.timer = new Timer(function() {
-
-                    // XXX
-                    // If we get here, it means this we have finished a step within a trip.
-
-                    if ( that.hasCallback() ) {
-                        that.getCurrentTripObject().callback( that.tripIndex, that );
-                    }
-
-                    that.next();
-
-                }, delay);                    
-                totalPausedStep = null;   
+                modalStep = null;   
             }
         },
 
@@ -331,27 +317,10 @@
             // next to o
             if(!that.totalPause) {
                 that.showCurrentTrip( tripObject );
-                // show the progress bar
-                that.showProgressBar( delay );
-                that.progressing = true;
-
-                // set timer to show next
-                that.timer = new Timer(function() {
-
-                    // XXX
-                    // If we get here, it means that we have finished a step within a trip.
-
-                    if ( that.hasCallback() ) {
-                        that.getCurrentTripObject().callback( that.tripIndex, that );
-                    }
-
-                    that.next();
-
-                }, delay);                    
 
             } else {
                 that.hideTripBlock();
-                that.totalPausedStep = tripObject;
+                that.modalStep = tripObject;
             }
         },
 

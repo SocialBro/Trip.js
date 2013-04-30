@@ -27,9 +27,9 @@
             content : 'Esto se muestra después del beforeCallback',
             delay : 3000,
             beforeCallback: function(i, trip) {
-                trip.toggleTotalPause();
+                trip.toggleModal();
                 var go = confirm("Esto es una descripción larga de lo que normalmente vamos a tener en estos pasos tan gigantescos. Dale a seguir si quieres seguir y si no po ná!", function(go) {
-                    if(go) trip.toggleTotalPause();
+                    if(go) trip.toggleModal();
                 });
             },
             callback : function(i, trip) {
@@ -48,9 +48,9 @@
             content : '¿Te ha gustado?',
             delay : 2000,
             beforeCallback: function(i, trip) {
-                trip.toggleTotalPause();
+                trip.toggleModal();
                 var go = confirm("Hold your breath and count to ten.", function(go) {
-                    if(go) trip.toggleTotalPause();
+                    if(go) trip.toggleModal();
                 });
             }
         },
@@ -61,7 +61,7 @@
             expose : true,
             delay : 7000,
             callback: function(i, trip) {
-                trip.toggleTotalPause();
+                trip.toggleModal();
                 alert("This is the end.")
             }
         }
