@@ -186,9 +186,9 @@
             this.progressing = !this.progressing;
         },
 
-        next : function() {
+        next : function(skipPrevCallback) {
             //prevStep callback
-            if ( this.hasCallback() ) {
+            if ( this.hasCallback() && !skipPrevCallback) {
                 this.getCurrentTripObject().callback( this.tripIndex, this );
             }
             //Curent step
@@ -272,13 +272,15 @@
 
         toggleModal: function() {
             this.totalPause = this.totalPause ? false : true;
-            if(!this.totalPause && this.modalStep) {
+            if(!this.totalPause && this.modalStep && this.modalStep.content) {
                 var tripObject = this.modalStep,
                     delay = tripObject.delay || this.settings.delay,
                     that = this;
 
                 this.showCurrentTrip( this.getCurrentTripObject() );
                 modalStep = null;   
+            } else if(!this.totalPause && this.modalStep && this.modalStep.content === "" && !this.isLast()) {
+                this.next();
             }
         },
 
@@ -315,7 +317,7 @@
             }
 
             // next to o
-            if(!that.totalPause) {
+            if(!that.totalPause && tripObject.content) {
                 that.showCurrentTrip( tripObject );
 
             } else {
